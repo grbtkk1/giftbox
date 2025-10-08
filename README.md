@@ -1,1 +1,246 @@
-# giftbox
+# giftbox<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIVE Gifts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.1/dist/dotlottie-wc.js" type="module"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .main-container {
+            max-width: 420px;
+            margin: 0 auto;
+        }
+        #celebration-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            opacity: 0;
+            background-color: rgba(0, 0, 0, 0);
+            transition: opacity 0.5s ease-in-out, background-color 0.5s ease-in-out;
+        }
+        #confetti-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #celebration-gif {
+            max-width: 80%;
+            max-height: 80%;
+            border-radius: 1rem;
+            z-index: 1;
+            pointer-events: auto;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.5s ease-in-out 0.2s, transform 0.5s ease-in-out 0.2s; /* Added delay */
+        }
+
+        /* Scale bounce animation for the button */
+        @keyframes scale-bounce {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(0.9);
+            }
+            80% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        .scaling {
+            animation: scale-bounce 0.6s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-white">
+
+    <div id="main-content" class="main-container p-4 min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="flex items-center justify-between py-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            <h1 class="text-lg font-bold text-gray-900">LIVE Gifts</h1>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </header>
+
+        <main class="flex-grow flex flex-col items-center text-center px-4 pt-8">
+            <!-- Illustration -->
+            <div class="w-full max-w-xs flex justify-center">
+                <dotlottie-wc src="https://lottie.host/a760d1bd-6e56-40cf-a11d-876b047db72e/XJJ86iq0rl.lottie" style="width: 300px;height: 300px" autoplay loop></dotlottie-wc>
+            </div>
+            <!-- Content -->
+            <div class="mt-10">
+                <h2 class="text-2xl font-bold text-gray-900">Get Gifts while you go LIVE</h2>
+                <p class="text-gray-600 mt-4 leading-relaxed">
+                    Go LIVE to start receiving Gifts from your viewers and get funded through your content.
+                </p>
+                <p class="text-sm text-gray-500 mt-6 leading-relaxed">
+                    Eligible accounts must be in good standing, follow our <b class="text-gray-800">Community Guidelines</b>, agree to the <b class="text-gray-800">Terms of Service</b>, <b class="text-gray-800">Privacy Policy</b>, and <b class="text-gray-800">Rewards Policy</b>.
+                </p>
+            </div>
+        </main>
+
+        <!-- Action Button -->
+        <footer class="py-6">
+             <button id="go-live-btn" class="w-full bg-red-500 text-white font-bold py-4 px-4 rounded-lg text-lg shadow-lg hover:bg-red-600 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75" style="background-color: #F8214B;">
+                Go LIVE
+            </button>
+        </footer>
+    </div>
+
+    <!-- Celebration Screen is now hidden by default -->
+    <div id="celebration-container" class="hidden">
+        <canvas id="confetti-canvas"></canvas>
+        <dotlottie-wc id="celebration-gif" src="https://lottie.host/0d0f597c-e348-4682-aa97-76918ecc4e1b/EyfXieBToW.lottie" style="width: 300px;height: 300px" autoplay loop></dotlottie-wc>
+    </div>
+
+    <script>
+        const goLiveBtn = document.getElementById('go-live-btn');
+        const celebrationContainer = document.getElementById('celebration-container');
+        const celebrationGif = document.getElementById('celebration-gif');
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let confettiParticles = [];
+        let animationFrameId;
+        let isCelebrating = false; // Controls the confetti stream
+
+        goLiveBtn.addEventListener('click', () => {
+            if (goLiveBtn.classList.contains('scaling')) return; // Prevent multiple clicks
+
+            goLiveBtn.classList.add('scaling');
+
+            // Short pause before celebration
+            setTimeout(() => {
+                celebrationContainer.classList.remove('hidden');
+                celebrationContainer.style.opacity = '1';
+                celebrationContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                celebrationContainer.style.pointerEvents = 'auto';
+
+                celebrationGif.style.opacity = '1';
+                celebrationGif.style.transform = 'scale(1)';
+
+                startCelebration();
+
+                // Hide everything after 5 seconds
+                setTimeout(stopCelebration, 5000);
+            }, 500); // 500ms delay
+
+            // Remove bounce class after animation ends
+            setTimeout(() => {
+                goLiveBtn.classList.remove('scaling');
+            }, 600);
+        });
+
+        function startCelebration() {
+            isCelebrating = true;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            animateConfetti();
+        }
+
+        function stopCelebration() {
+            isCelebrating = false; // This will stop new confetti from being created
+            
+            // Fade out the dark background and GIF
+            celebrationContainer.style.opacity = '0';
+            celebrationContainer.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+            celebrationContainer.style.pointerEvents = 'none';
+
+            celebrationGif.style.opacity = '0';
+            celebrationGif.style.transform = 'scale(0.8)';
+            
+            // Hide the container after the transition ends
+            setTimeout(() => {
+                celebrationContainer.classList.add('hidden');
+            }, 500);
+        }
+        
+        const colors = ["#f8214b", "#ffc107", "#03a9f4", "#4caf50", "#9c27b0", "#ffffff"];
+        const gravity = 0.05;
+        const maxParticles = 300;
+
+        function createParticle() {
+             return {
+                x: Math.random() * canvas.width,
+                y: -20, // Start above the screen
+                w: Math.random() * 8 + 5, // width
+                h: Math.random() * 15 + 8, // height
+                color: colors[Math.floor(Math.random() * colors.length)],
+                speedX: Math.random() * 4 - 2, // horizontal drift
+                speedY: Math.random() * 2 + 1, // vertical speed
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: Math.random() * 0.1 - 0.05,
+                opacity: 1,
+                opacityDecay: Math.random() * 0.005 + 0.005
+            };
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // If celebrating, add new particles to the stream
+            if(isCelebrating && confettiParticles.length < maxParticles) {
+                for(let i = 0; i < 4; i++) {
+                     confettiParticles.push(createParticle());
+                }
+            }
+            
+            confettiParticles.forEach((particle, index) => {
+                particle.speedY += gravity;
+                particle.x += particle.speedX;
+                particle.y += particle.speedY;
+                particle.rotation += particle.rotationSpeed;
+                particle.opacity -= particle.opacityDecay;
+
+                if (particle.y > canvas.height || particle.opacity <= 0) {
+                    confettiParticles.splice(index, 1);
+                } else {
+                    ctx.save();
+                    ctx.globalAlpha = particle.opacity;
+                    ctx.translate(particle.x + particle.w / 2, particle.y + particle.h / 2);
+                    ctx.rotate(particle.rotation);
+                    ctx.fillStyle = particle.color;
+                    ctx.fillRect(-particle.w / 2, -particle.h / 2, particle.w, particle.h);
+                    ctx.restore();
+                }
+            });
+
+            // Keep animating as long as there are particles or we are still celebrating
+            if (confettiParticles.length > 0 || isCelebrating) {
+                animationFrameId = requestAnimationFrame(animateConfetti);
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            if (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        });
+
+    </script>
+</body>
+</html>
