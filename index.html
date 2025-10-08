@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -89,7 +89,7 @@
             <div class="w-full max-w-xs flex justify-center">
                 <dotlottie-wc src="https://lottie.host/a760d1bd-6e56-40cf-a11d-876b047db72e/XJJ86iq0rl.lottie" style="width: 300px;height: 300px" autoplay loop></dotlottie-wc>
             </div>
-<!-- Content -->
+            <!-- Content -->
             <div class="mt-10">
                 <h2 class="text-2xl font-bold text-gray-900">Get Gifts while you go LIVE</h2>
                 <p class="text-gray-600 mt-4 leading-relaxed">
@@ -138,7 +138,6 @@
                 celebrationContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
                 celebrationContainer.style.pointerEvents = 'auto';
 
-
                 celebrationGif.style.opacity = '1';
                 celebrationGif.style.transform = 'scale(1)';
 
@@ -178,7 +177,8 @@
                 celebrationContainer.classList.add('hidden');
             }, 500);
         }
-const colors = ["#f8214b", "#ffc107", "#03a9f4", "#4caf50", "#9c27b0", "#ffffff"];
+        
+        const colors = ["#f8214b", "#ffc107", "#03a9f4", "#4caf50", "#9c27b0", "#ffffff"];
         const gravity = 0.05;
         const maxParticles = 300;
 
@@ -215,7 +215,7 @@ const colors = ["#f8214b", "#ffc107", "#03a9f4", "#4caf50", "#9c27b0", "#ffffff"
                 particle.rotation += particle.rotationSpeed;
                 particle.opacity -= particle.opacityDecay;
 
-                if (particle.y > canvas.height  particle.opacity <= 0) {
+                if (particle.y > canvas.height || particle.opacity <= 0) {
                     confettiParticles.splice(index, 1);
                 } else {
                     ctx.save();
@@ -229,14 +229,16 @@ const colors = ["#f8214b", "#ffc107", "#03a9f4", "#4caf50", "#9c27b0", "#ffffff"
             });
 
             // Keep animating as long as there are particles or we are still celebrating
-            if (confettiParticles.length > 0  isCelebrating) {
+            if (confettiParticles.length > 0 || isCelebrating) {
                 animationFrameId = requestAnimationFrame(animateConfetti);
             }
         }
 
         window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            if (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
         });
 
     </script>
